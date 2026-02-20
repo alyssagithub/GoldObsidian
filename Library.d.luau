@@ -716,11 +716,17 @@ export type Window = {
         Info: {
             Title: string,
             Description: string?,
+            Icon: string?,
+            TitleColor: Color3?,
+            DescriptionColor: Color3?,
             AutoDismiss: boolean?,
             OutsideClickDismiss: boolean?,
             FooterButtons: { [string]: DialogButtonInfo }?
         }
     ) -> Dialog,
+    ChangeTitle: (self: Window, Title: string) -> (),
+    ChangeBackgroundImage: (self: Window, Image: string) -> (),
+    ChangeFooter: (self: Window, Footer: string) -> (),
 }
 
 --// Main Library Type
