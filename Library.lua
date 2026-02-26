@@ -4453,6 +4453,10 @@ do
 
 			Type = "Dropdown",
 		}
+		
+		if Info.FormatDisplayValues and not Info.FormatDisplayValue then
+			Info.FormatDisplayValue = Info.FormatDisplayValues
+		end
 
 		local Holder = New("Frame", {
 			BackgroundTransparency = 1,
