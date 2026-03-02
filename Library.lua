@@ -187,6 +187,7 @@ local Library = {
 	ForceNonLoopedCheckbox = false,
 	ShowToggleFrameInKeybinds = true,
 	NotifyOnError = false,
+	DefaultNotifyData = {},
 
 	CantDragForced = false,
 
@@ -5755,26 +5756,51 @@ function Library:SetNotifySide(Side: string)
 	end
 end
 
+function Library:SetDefaultNotifyData(Data)
+	Library.DefaultNotifyData = Data
+end
+
+local NotificationCooldowns = {}
+
 function Library:Notify(...)
 	local Data = {}
 	local Info = select(1, ...)
 
 	if typeof(Info) == "table" then
-		Data.Title = tostring(Info.Title)
-		Data.Description = tostring(Info.Description)
-		Data.Time = Info.Time or 5
-		Data.SoundId = Info.SoundId
-		Data.Steps = Info.Steps
-		Data.Persist = Info.Persist
-		Data.Icon = Info.Icon
-		Data.BigIcon = Info.BigIcon
-		Data.IconColor = Info.IconColor
+		Data.Title = tostring(Info.Title or Library.DefaultNotifyData.Title)
+		Data.Description = tostring(Info.Description or Library.DefaultNotifyData.Description)
+		Data.Time = Info.Time or Library.DefaultNotifyData.Time or 5
+		Data.SoundId = Info.SoundId or Library.DefaultNotifyData.SoundId
+		Data.Steps = Info.Steps or Library.DefaultNotifyData.Steps
+		Data.Persist = Info.Persist or Library.DefaultNotifyData.Persist
+		Data.Icon = Info.Icon or Library.DefaultNotifyData.Icon
+		Data.BigIcon = Info.BigIcon or Library.DefaultNotifyData.BigIcon
+		Data.IconColor = Info.IconColor or Library.DefaultNotifyData.IconColor
 	else
-		Data.Description = tostring(Info)
-		Data.Time = select(2, ...) or 5
-		Data.SoundId = select(3, ...)
+		Data.Description = tostring(Info or Library.DefaultNotifyData.Description)
+		Data.Time = select(2, ...) or Library.DefaultNotifyData.Time or 5
+		Data.SoundId = select(3, ...) or Library.DefaultNotifyData.SoundId
 	end
 	Data.Destroyed = false
+	
+	if Data.Description then
+		if NotificationCooldowns[Data.Description] then
+			return
+		end
+
+		NotificationCooldowns[Data.Description] = true
+		task.delay(Data.Time + .5, function()
+			NotificationCooldowns[Data.Description] = nil
+		end)
+		
+		if Data.Description:find("Auto loaded config") then
+			Data.SoundId = nil
+		end
+	end
+	
+	if Data.SoundId == true then
+		Data.SoundId = nil
+	end
 
 	local DeletedInstance = false
 	local DeleteConnection = nil
