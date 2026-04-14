@@ -8355,8 +8355,8 @@ function Library:CreateWindow(WindowInfo)
 				BtnColor = "MainColor"
 				BtnOutline = "OutlineColor"
 			elseif Variant == "Destructive" then
-				BtnColor = "DestructiveColor"
-				BtnOutline = "DestructiveColor"
+				BtnColor = Color3.fromRGB(220, 38, 38)
+				BtnOutline = Color3.fromRGB(220, 38, 38)
 			elseif Variant == "Ghost" then
 				BtnColor = "BackgroundColor"
 				BtnOutline = "BackgroundColor"
