@@ -4128,13 +4128,13 @@ do
 
 			Library:UpdateDependencyBoxes()
 			Library:SafeCallback(Toggle.Changed, Toggle.Value)
-			
+
 			-- Looped Callback
 			if not (Info.Looped and Toggle.Value) then
 				Library:SafeCallback(Toggle.Callback, Toggle.Value)
 				return
 			end
-			
+
 			task.spawn(function()
 				Library:SafeCallback(function()
 					while Toggle.Value and not Library.Unloaded do
@@ -4191,7 +4191,7 @@ do
 			Label.TextColor3 = Library.Scheme.RedColor
 			Library.Registry[Label].TextColor3 = "RedColor"
 		end
-		
+
 		-- Makes default true toggles run immediately
 		if Toggle.Value then
 			Toggle:SetValue(Toggle.Value)
@@ -4709,7 +4709,8 @@ do
 			Info.Values = GetTeams()
 			Info.AllowNull = true
 		end
-		
+
+		-- Array Dropdown Implementation
 		local ArrayValueMetatable =  setmetatable({}, {
 			__newindex = function(ValueTable, Index, BooleanValue)
 				local ExistingIndex = table.find(ValueTable, Index)
@@ -4747,8 +4748,8 @@ do
 
 			Type = "Dropdown",
 		}
-		
-		-- Substitutions
+
+		-- FormatListValue Substitutes FormatDisplayValue
 		if not Info.FormatDisplayValue and Info.FormatListValue then
 			Info.FormatDisplayValue = Info.FormatListValue
 		end
@@ -4886,6 +4887,7 @@ do
 			local Str = ""
 
 			if Info.Multi then
+				-- Array Dropdown Implementation
 				for _, Value in if Info.Array then Dropdown.Value else Dropdown.Values do
 					if Dropdown.Value[Value] then
 						Str = Str
@@ -4895,7 +4897,8 @@ do
 				end
 
 				Str = Str:sub(1, #Str - 2)
-			else
+			elseif not Info.FormatListValue then
+				-- FormatListValue Substitutes FormatDisplayValue
 				Str = Dropdown.Value and tostring(Dropdown.Value) or ""
 				if Str ~= "" and Info.FormatDisplayValue then
 					Str = tostring(Info.FormatDisplayValue(Str))
@@ -5003,10 +5006,22 @@ do
 
 						Table:UpdateButton()
 						Dropdown:Display()
+						
+						-- ResetAfterSelection Implementation
+						if Info.ResetAfterSelection then
+							MenuTable:Close()
+						end
 
 						Library:UpdateDependencyBoxes()
 						Library:SafeCallback(Dropdown.Callback, Dropdown.Value)
 						Library:SafeCallback(Dropdown.Changed, Dropdown.Value)
+						
+						-- ResetAfterSelection Implementation
+						if Info.ResetAfterSelection then
+							Dropdown.Disabled = true
+							Dropdown:SetValue()
+							Dropdown.Disabled = false
+						end
 					end)
 				end
 
@@ -6052,7 +6067,7 @@ function Library:Notify(...)
 		Data.SoundId = select(3, ...) or (Library.DefaultNotifyData or {}).SoundId
 	end
 	Data.Destroyed = false
-	
+
 	-- Notification Cooldowns
 	do
 		local Description = Data.Description
@@ -6070,6 +6085,11 @@ function Library:Notify(...)
 		if Description:find("Auto loaded config") then
 			Data.SoundId = nil
 		end
+	end
+	
+	-- Don't Display Automatic Save Config
+	if Data.Description == 'Auto loaded config "Automatic Save"' then
+		return
 	end
 
 	local DeletedInstance = false
